@@ -12,36 +12,110 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: system-ui, -apple-system, sans-serif;
-    background: #111;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 50% 0%, #1c1c26 0%, #0a0a0f 70%);
     color: #fff;
     padding: 24px;
-    text-align: center;
   }
+
   .card {
-    max-width: 420px;
+    max-width: 380px;
+    width: 100%;
+    background: #15151c;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 40px 28px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    opacity: 0;
+    transform: translateY(12px);
+    animation: rise 0.5s ease forwards;
   }
-  h1 { font-size: 22px; margin: 0 0 12px; }
-  p { font-size: 15px; color: #ccc; line-height: 1.5; margin: 0; }
+
+  @keyframes rise {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo {
+    width: 120px;
+    margin: 0 auto 24px;
+    display: block;
+  }
+
+  .icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon svg { width: 34px; height: 34px; }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 10px;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    font-size: 15px;
+    color: #9a9aa5;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .ok .icon { background: rgba(74, 222, 128, 0.12); }
+  .ok .icon svg { stroke: #4ade80; }
   .ok h1 { color: #4ade80; }
+
+  .blocked .icon { background: rgba(248, 113, 113, 0.12); }
+  .blocked .icon svg { stroke: #f87171; }
   .blocked h1 { color: #f87171; }
-  .loading h1 { color: #999; }
+
+  .loading .icon {
+    background: rgba(255,255,255,0.06);
+    animation: spin 1s linear infinite;
+  }
+  .loading .icon svg { stroke: #9a9aa5; }
+  .loading h1 { color: #d4d4d8; }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 </style>
 </head>
 <body>
   <div class="card loading" id="card">
+    <img src="logo.png" alt="Bike and Fly Araraquara" class="logo">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="9" stroke-dasharray="42" stroke-dashoffset="14"/>
+      </svg>
+    </div>
     <h1>Verificando...</h1>
     <p>Aguarde um instante.</p>
   </div>
 
   <script>
+    const ICONS = {
+      ok: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>',
+      blocked: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+    };
+
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     const card = document.getElementById("card");
 
     function render(state, title, text) {
       card.className = state;
-      card.innerHTML = `<h1>${title}</h1><p>${text}</p>`;
+      card.style.animation = "none";
+      void card.offsetWidth;
+      card.style.animation = "rise 0.5s ease forwards";
+      card.innerHTML = `<img src="logo.png" alt="Bike and Fly Araraquara" class="logo"><div class="icon">${ICONS[state] || ""}</div><h1>${title}</h1><p>${text}</p>`;
     }
 
     if (!id) {
