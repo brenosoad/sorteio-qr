@@ -48,45 +48,21 @@
       render("blocked", "Link inválido", "Este link não possui um código de acesso.");
     } else {
       // ==== CONFIGURE AQUI ====
-      const GITHUB_TOKEN = "ghp_4U95yIBPhvYsMVIUSUg3zVu2U81waa4YpZXA";
-      const OWNER = "brenosoad";
-      const REPO = "sorteio-qr";
-      const FILE_PATH = "estoque.json";
+      // Cole a URL do App da Web do Google Apps Script (termina com /exec)
+      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXOXeneXtUeJWxYyEwhGQPXyXYSPyFZqLfT7mn_xn-HBtYkMLsimjT9GAPgu7kPo4S/exec";
       // =========================
 
-      const apiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`;
-
-      fetch(apiUrl, {
-        headers: { "Authorization": `token ${GITHUB_TOKEN}` }
-      })
+      fetch(`${SCRIPT_URL}?id=${encodeURIComponent(id)}`)
         .then(r => r.json())
-        .then(async fileData => {
-          const estoque = JSON.parse(atob(fileData.content));
-
-          if (!(id in estoque)) {
+        .then(data => {
+          if (data.status === "invalido") {
             render("blocked", "Código inválido", "Este código não existe.");
             return;
           }
-          if (estoque[id] === true) {
+          if (data.status === "ja_usado") {
             render("blocked", "Já utilizado", "Este código já foi acessado anteriormente e não pode ser usado novamente.");
             return;
           }
-
-          estoque[id] = true;
-
-          await fetch(apiUrl, {
-            method: "PUT",
-            headers: {
-              "Authorization": `token ${GITHUB_TOKEN}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              message: `código ${id} usado`,
-              content: btoa(JSON.stringify(estoque)),
-              sha: fileData.sha
-            })
-          });
-
           fetch("premios.json")
             .then(r => r.json())
             .then(premios => {
