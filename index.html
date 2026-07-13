@@ -80,6 +80,31 @@
   .blocked .icon svg { stroke: #f87171; }
   .blocked h1 { color: #f87171; }
 
+  .premio-box {
+    margin-top: 18px;
+    padding: 18px 20px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.14), rgba(74, 222, 128, 0.04));
+    border: 1px solid rgba(74, 222, 128, 0.35);
+  }
+
+  .premio-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #4ade80;
+    margin: 0 0 6px;
+  }
+
+  .premio-nome {
+    font-size: 19px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+    margin: 0;
+  }
+
   .loading .icon {
     background: rgba(255,255,255,0.06);
     animation: spin 1s linear infinite;
@@ -122,6 +147,14 @@
       card.innerHTML = `<img src="logo.png" alt="Bike and Fly Araraquara" class="logo"><div class="icon">${ICONS[state] || ""}</div><h1>${title}</h1><p>${text}</p>`;
     }
 
+    function renderPremio(premio) {
+      card.className = "ok";
+      card.style.animation = "none";
+      void card.offsetWidth;
+      card.style.animation = "rise 0.5s ease forwards";
+      card.innerHTML = `<img src="logo.png" alt="Bike and Fly Araraquara" class="logo"><div class="icon">${ICONS.ok}</div><h1>Parabéns!</h1><p>Você ganhou:</p><div class="premio-box"><p class="premio-label">Seu prêmio</p><p class="premio-nome">${premio}</p></div>`;
+    }
+
     if (!id) {
       render("blocked", "Link inválido", "Este link não possui um código de acesso.");
     } else {
@@ -145,7 +178,7 @@
             .then(r => r.json())
             .then(premios => {
               const premio = premios[id] || "Prêmio surpresa!";
-              render("ok", "Parabéns!", premio);
+              renderPremio(premio);
             })
             .catch(() => {
               render("ok", "Acesso liberado", "Erro ao carregar o prêmio, mas seu código é válido. Mostre esta tela no balcão.");
