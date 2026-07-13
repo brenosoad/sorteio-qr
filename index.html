@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acesso</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #111;
+    color: #fff;
+    padding: 24px;
+    text-align: center;
+  }
+  .card {
+    max-width: 420px;
+  }
+  h1 { font-size: 22px; margin: 0 0 12px; }
+  p { font-size: 15px; color: #ccc; line-height: 1.5; margin: 0; }
+  .ok h1 { color: #4ade80; }
+  .blocked h1 { color: #f87171; }
+  .loading h1 { color: #999; }
+</style>
+</head>
+<body>
+  <div class="card loading" id="card">
+    <h1>Verificando...</h1>
+    <p>Aguarde um instante.</p>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const card = document.getElementById("card");
+
+    function render(state, title, text) {
+      card.className = state;
+      card.innerHTML = `<h1>${title}</h1><p>${text}</p>`;
+    }
+
+    if (!id) {
+      render("blocked", "Link inválido", "Este link não possui um código de acesso.");
+    } else {
+      // ==== CONFIGURE AQUI ====
+      const GITHUB_TOKEN = "COLE_AQUI_SEU_TOKEN_DO_GITHUB";
+      const OWNER = "SEU-USUARIO-GITHUB";
+      const REPO = "NOME-DO-REPOSITORIO";
+      const FILE_PATH = "estoque.json";
+      // =========================
+
+      const apiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`;
+
+      fetch(apiUrl, {
+        headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+      })
+        .then(r => r.json())
+        .then(async fileData => {
+          const estoque = JSON.parse(atob(fileData.content));
+
+          if (!(id in estoque)) {
+            render("blocked", "Código inválido", "Este código não existe.");
+            return;
+          }
+          if (estoque[id] === true) {
+            render("blocked", "Já utilizado", "Este código já foi acessado anteriormente e não pode ser usado novamente.");
+            return;
+          }
+
+          estoque[id] = true;
+
+          await fetch(apiUrl, {
+            method: "PUT",
+            headers: {
+              "Authorization": `token ${GITHUB_TOKEN}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              message: `código ${id} usado`,
+              content: btoa(JSON.stringify(estoque)),
+              sha: fileData.sha
+            })
+          });
+
+          fetch("premios.json")
+            .then(r => r.json())
+            .then(premios => {
+              const premio = premios[id] || "Prêmio surpresa!";
+              render("ok", "Parabéns!", premio);
+            })
+            .catch(() => {
+              render("ok", "Acesso liberado", "Erro ao carregar o prêmio, mas seu código é válido. Mostre esta tela no balcão.");
+            });
+        })
+        .catch(() => {
+          render("blocked", "Erro", "Não foi possível verificar o código. Tente novamente.");
+        });
+    }
+  </script>
+</body>
+</html>
